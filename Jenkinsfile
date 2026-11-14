@@ -1,24 +1,39 @@
 pipeline {
-    agent {
-        dockerfile {
-            filename 'Dockerfile'
-            args '--entrypoint='      // your image has ENTRYPOINT ["newman"], Jenkins needs a free entrypoint
-        }
+    agent any
+
+    options {
+        // Keep the history of the last 5 builds only
+        buildDiscarder(logRotator(numToKeepStr: '5'))
     }
 
-    options { buildDiscarder(logRotator(numToKeepStr: '5')) }
-
     environment {
+        // Token comes from the Jenkins credential (Secret text, ID: gorest-token)
         GOREST_TOKEN = credentials('gorest-token')
     }
 
     stages {
-        stage('Run Workflow Collection') {
+
+        // Jenkins checks out the repo automatically ("Pipeline script from SCM"),
+        // so no separate Checkout stage is needed.
+
+        stage('Build Docker Image') {
             steps {
+                sh 'docker build -t gorest-newman .'
+            }
+        }
+
+        stage('Run API Test Cases') {
+            steps {
+                // Mounts the workspace into the container and runs the script from the repo.
+                // Reports are written to reports/ in the workspace.
                 sh '''
-                    ENV_FILE=environments/GoRestEnv.example.json \
-                    TOKEN_ID="$GOREST_TOKEN" \
-                    scripts/run-newman.sh collections/GoRestAPI-Workflow-v3.json workflow
+                    docker run --rm \
+                      -v "$(pwd)":/app \
+                      -e ENV_FILE=environments/GoRestEnv.example.json \
+                      -e TOKEN_ID="$GOREST_TOKEN" \
+                      --entrypoint scripts/run-newman.sh \
+                      gorest-newman \
+                      collections/GoRestAPI-Workflow-v3.json workflow
                 '''
             }
         }
@@ -26,10 +41,14 @@ pipeline {
 
     post {
         always {
+            // Runs even when the tests fail, so the report is always published
             publishHTML(target: [
-                reportDir: 'reports', reportFiles: 'workflow-latest.html',
-                reportName: 'NewmanReport', keepAll: true,
-                alwaysLinkToLastBuild: true, allowMissing: true
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'reports',
+                reportFiles: 'workflow-latest.html',
+                reportName: 'NewmanReport'
             ])
         }
     }
