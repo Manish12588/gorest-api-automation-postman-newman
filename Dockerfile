@@ -5,6 +5,6 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install Newman globally
-RUN npm install -g newman newman-reporter-htmlextra && npm cache clean --force
+RUN apk add --no-cache bash && npm install -g newman newman-reporter-htmlextra && npm cache clean --force
 
 ENTRYPOINT ["newman"]
