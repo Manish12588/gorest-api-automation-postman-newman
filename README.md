@@ -59,3 +59,39 @@ Each row in the CSV runs the collection once, so a 3-row file gives 3 iterations
   - `1`: at least one test failed
 
 ![Newman local run](docs/newman-run.png)
+
+## 2. Run with Docker
+
+Runs the same collections in a container, so you don't need Node.js or Newman installed. The image contains only Newman and the HTML reporter. The collections, environment file and CSV are mounted from your machine at run time, so the API token is never baked into the image.
+
+### Prerequisites
+- Docker installed and running
+- `environments/GoRestEnv.json` created from the example file (see [Environment Setup](#environment-setup))
+
+### Build the image (once)
+```bash
+docker build -t gorest-newman .
+```
+
+### Run the workflow collection
+```bash
+docker run --rm -v "$(pwd)":/app gorest-newman \
+  run collections/GoRestAPI-Workflow-v3.json \
+  -e environments/GoRestEnv.json \
+  -r cli,htmlextra --reporter-htmlextra-export reports/workflow.html
+```
+
+### How it works
+| Part | Purpose |
+|------|---------|
+| `-v "$(pwd)":/app` | Mounts the repo into the container's working directory, so the collection, environment and CSV are read from the host and reports are written back to `reports/` |
+| `gorest-newman` | The image built above; its entrypoint is `newman`, so everything after the image name is passed to Newman |
+| `-r cli,htmlextra` | Prints results in the terminal and generates an HTML report |
+| `--rm` | Removes the container after the run |
+
+On Windows PowerShell, use `${PWD}` instead of `$(pwd)`.
+
+### Results
+Open `reports/workflow.html` or `reports/datadriven.html` in a browser. The container's exit code is `0` when all tests pass and `1` when any fail, which is what Jenkins uses to mark the build.
+
+![Newman HTML report](docs/report-workflow.png)
