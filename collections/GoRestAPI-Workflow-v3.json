@@ -33,7 +33,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "{{tokenId}}"
+            "value": "Bearer {{tokenId}}"
           },
           {
             "key": "Content-Type",
@@ -81,7 +81,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "{{tokenId}}"
+            "value": "Bearer {{tokenId}}"
           }
         ],
         "url": {
@@ -117,7 +117,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "{{tokenId}}"
+            "value": "Bearer {{tokenId}}"
           }
         ],
         "body": {
@@ -162,7 +162,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "{{tokenId}}"
+            "value": "Bearer {{tokenId}}"
           }
         ],
         "url": {
@@ -198,7 +198,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "{{tokenId}}"
+            "value": "Bearer {{tokenId}}"
           }
         ],
         "url": {
@@ -224,7 +224,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "const resData = pm.response.json();\n\npm.test(\"Status code is 404\", function () {\n    pm.response.to.have.status(404);\n});\n\npm.test(\"Get user after delete it should give 'detail: No such item' \", function () {\n    pm.expect(resData.detail).to.eql(\"No such item.\");\n});\n\nconsole.log(\"GET url => \" + pm.request.url.toString());\nconsole.log(\"status => \" + pm.response.code + \" body => \" + pm.response.text());"
+              "const resData = pm.response.json();\n\npm.test(\"Status code is 404\", function () {\n    pm.response.to.have.status(404);\n});\n\npm.test(\"Get user after delete it should give 'detail: No such item' \", function () {\n    pm.expect(resData.detail).to.eql(\"No such item.\");\n});"
             ]
           }
         }
@@ -234,7 +234,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "{{tokenId}}"
+            "value": "Bearer {{tokenId}}"
           }
         ],
         "url": {
@@ -251,16 +251,6 @@
         }
       },
       "response": []
-    }
-  ],
-  "variable": [
-    {
-      "key": "bearer_token_0moz",
-      "secret": true
-    },
-    {
-      "key": "bearer_token_1coz",
-      "secret": true
     }
   ]
 }
