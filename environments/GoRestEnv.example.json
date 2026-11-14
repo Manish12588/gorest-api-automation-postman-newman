@@ -10,7 +10,7 @@
       "enabled": true
     },
     {
-      "key": "token",
+      "key": "tokenId",
       "value": "",
       "type": "secret",
       "enabled": true
