@@ -1,0 +1,16 @@
+# Environment files (contain the GoRest token): ignore all except the example
+environments/*
+!environments/*.example.json
+
+# Newman output
+reports/
+newman/
+
+# Node
+node_modules/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

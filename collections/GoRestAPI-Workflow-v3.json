@@ -1,0 +1,266 @@
+{
+  "info": {
+    "_postman_id": "7002ec29-ba36-4fe3-8f98-4357707c8afb",
+    "name": "GoRestAPI-Workflow-v3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "9494331"
+  },
+  "item": [
+    {
+      "name": "1 - create a user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n\nconst resData = pm.response.json();\nconst userId = resData.id;\n\nconsole.log(\"user id => \" + userId);\npm.variables.set(\"userId\", userId);\n\npm.test(\"Validate user name\", function () {\n    pm.expect(resData.name).to.eql(pm.variables.get(\"randomName\"));\n    console.log(\"User Name => \"+pm.variables.get(\"randomName\"));\n});\n\npm.test(\"Validate user email\", function () {\n    pm.expect(resData.email).to.eql(pm.variables.get(\"randomEmail\"));\n    console.log(\"User Email => \"+pm.variables.get(\"randomEmail\"));\n});\n\n\n"
+            ]
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.variables.set(\"randomName\", pm.variables.replaceIn(\"{{$randomFullName}}\"));\npm.variables.set(\"randomEmail\", pm.variables.replaceIn(\"{{$randomEmail}}\").toLowerCase());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenId}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"{{randomName}}\",\n    \"email\": \"{{randomEmail}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/public/v3/users",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "public",
+            "v3",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2- Get the user after create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const resData = pm.response.json();\n\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"check user name\", function () {\n    pm.expect(resData.name).to.eql(pm.variables.get(\"randomName\"));\n});\n\npm.test(\"check user email\", function () {\n    pm.expect(resData.email).to.eql(pm.variables.get(\"randomEmail\"));\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenId}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}/public/v3/users/{{userId}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "public",
+            "v3",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3 - update the user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const requestBody =JSON.parse(pm.request.body.raw);\nconst status = requestBody.status;\nconsole.log(\"New status => \"+ status);\npm.variables.set(\"status\", status);\n\n\nconst resData = pm.response.json();\n\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"check user name after update\", function () {\n    pm.expect(resData.name).to.eql(pm.variables.get(\"randomName\"));\n});\n\npm.test(\"check user email after update\", function () {\n    pm.expect(resData.email).to.eql(pm.variables.get(\"randomEmail\"));\n});\n\npm.test(\"check user status after update\", function () {\n    pm.expect(resData.status).to.eql(pm.variables.get(\"status\"));\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenId}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "    {\n    \"status\" : \"inactive\"\n    }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/public/v3/users/{{userId}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "public",
+            "v3",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4- Get the user after update",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const resData = pm.response.json();\n\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"check user name after update\", function () {\n    pm.expect(resData.name).to.eql(pm.variables.get(\"randomName\"));\n});\n\npm.test(\"check user email after update\", function () {\n    pm.expect(resData.email).to.eql(pm.variables.get(\"randomEmail\"));\n});\n\npm.test(\"check user status after update\", function () {\n    pm.expect(resData.status).to.eql(pm.variables.get(\"status\"));\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenId}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}/public/v3/users/{{userId}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "public",
+            "v3",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5 - Delete a user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\n\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenId}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}/public/v3/users/{{userId}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "public",
+            "v3",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6- Get the user after Delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const resData = pm.response.json();\n\npm.test(\"Status code is 404\", function () {\n    pm.response.to.have.status(404);\n});\n\npm.test(\"Get user after delete it should give 'detail: No such item' \", function () {\n    pm.expect(resData.detail).to.eql(\"No such item.\");\n});\n\nconsole.log(\"GET url => \" + pm.request.url.toString());\nconsole.log(\"status => \" + pm.response.code + \" body => \" + pm.response.text());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{tokenId}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}/public/v3/users/{{userId}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "public",
+            "v3",
+            "users",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "bearer_token_0moz",
+      "secret": true
+    },
+    {
+      "key": "bearer_token_1coz",
+      "secret": true
+    }
+  ]
+}
