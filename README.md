@@ -57,3 +57,5 @@ Each row in the CSV runs the collection once, so a 3-row file gives 3 iterations
 - Check the exit code (`echo $?` on macOS/Linux, `echo %ERRORLEVEL%` on Windows):
   - `0`: all tests passed
   - `1`: at least one test failed
+
+![Newman local run](docs/newman-run.png)
