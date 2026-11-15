@@ -14,7 +14,6 @@ pipeline {
     stages {
 
         // Jenkins checks out the repo automatically ("Pipeline script from SCM"),
-        // so no separate Checkout stage is needed.
 
         stage('Build Docker Image') {
             steps {
