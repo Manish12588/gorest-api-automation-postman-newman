@@ -95,3 +95,66 @@ On Windows PowerShell, use `${PWD}` instead of `$(pwd)`.
 Open `reports/workflow.html` or `reports/datadriven.html` in a browser. The container's exit code is `0` when all tests pass and `1` when any fail, which is what Jenkins uses to mark the build.
 
 ![Newman HTML report](docs/report-workflow.png)
+
+## 3. Run with Jenkins
+
+Jenkins checks the repo out of GitHub, runs the Newman command in a shell step, and uses Newman's exit code (`0` = all tests passed, `1` = a test failed) to mark the build green or red. The API token comes from a Jenkins credential, so it is never stored in the repo.
+
+Install and configure Jenkins first: **[docs/jenkins-setup.md](docs/jenkins-setup.md)**
+
+### Store the API token as a credential
+
+1. **Manage Jenkins → Credentials → System → Global credentials (unrestricted) → Add Credentials**
+2. Fill in:
+   - **Kind:** Secret text
+   - **Secret:** your GoRest access token
+   - **ID:** `gorest-token`
+   - **Description:** GoRest API token
+3. Click **Create**.
+
+### Create the freestyle job
+
+1. **Dashboard → New Item**. Enter the name `gorest-workflow-newman`, choose **Freestyle project**, and click **OK**.
+
+2. **Source Code Management → Git**
+   - **Repository URL:** `https://github.com/<your-username>/<your-repo>.git`
+   - **Branch Specifier:** `*/main`
+   - A public repo needs no credentials.
+
+3. **Build Environment**
+   - Tick **Use secret text(s) or file(s)**.
+   - **Add → Secret text**, set **Variable** to `GOREST_TOKEN`, and select the `gorest-token` credential.
+
+4. **Build Steps → Add build step → Execute shell**
+   ```bash
+   newman run collections/GoRestAPI-Workflow-v3.json \
+     -e environments/GoRestEnv.example.json \
+     --env-var "token=$GOREST_TOKEN" \
+     -r cli,htmlextra --reporter-htmlextra-export reports/workflow.html
+   ```
+   Why the example environment file: the real `GoRestEnv.json` is gitignored, so it does not exist in the checkout. The example file contains `baseURL`, and `--env-var` supplies the token. The variable name (`token`) must match the name your collection uses.
+
+5. **Post-build Actions → Publish HTML reports → Add**
+   - **HTML directory to archive:** `reports`
+   - **Index page[s]:** `workflow.html`
+   - **Report title:** Newman Report
+
+6. Click **Save**.
+
+To create the data-driven job, clone the job (**New Item → Copy from**), change the collection path in the shell step to the data-driven collection, and add `-d data/myuser.csv` and a different report file name (e.g. `reports/datadriven.html`).
+
+### Run and verify
+
+1. Open the job and click **Build Now**.
+2. Click the build number (e.g. `#1`) and then **Console Output**. You should see the Newman summary with all assertions passed and `Finished: SUCCESS`.
+3. On the job page, click the **Newman Report** link to open the HTML report.
+4. **Check that failures are detected:** change one assertion in the collection so that it fails, push the change, and build again. The build should turn red, with `Finished: FAILURE`. Then revert the change.
+
+### Troubleshooting
+
+| Symptom | Cause and fix |
+|---------|---------------|
+| `newman: command not found` | Jenkins was started from a terminal without Newman on its `PATH`. Restart Jenkins from a terminal where `newman --version` works. |
+| `401` or empty token errors from the API | The credential is not bound or its ID is wrong. Check the variable name in the build environment and the `--env-var` key. |
+| Environment file not found | The job points at `GoRestEnv.json`, which is gitignored. Use `GoRestEnv.example.json`. |
+| HTML report is blank or has no styling | Jenkins' Content Security Policy blocks the report's inline scripts. Open the generated file from the workspace or download it. |
